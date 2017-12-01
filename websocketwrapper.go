@@ -9,28 +9,29 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// WebsocketUpgrader is an interface implemented by websocketUpgraderWrapper to wrap websocket.Upgrader.
-// Create a NewMockWebsocketUpgrader(*gomock.Controller) to write unit tests,
-// or New(*websocket.Upgrader) for real use.
-type WebsocketUpgrader interface {
-	Upgrade(w http.ResponseWriter, r *http.Request, h http.Header) (WebsocketConn, error)
+// Upgrader is an interface implemented by websocketUpgraderWrapper to wrap websocket.Upgrader.
+// Create a NewMockUpgrader(*gomock.Controller) to write unit tests,
+// or NewUpgrader(*websocket.Upgrader) for real use.
+type Upgrader interface {
+	Upgrade(w http.ResponseWriter, r *http.Request, h http.Header) (Conn, error)
 }
 
 type websocketUpgraderWrapper struct {
 	Upgrader *websocket.Upgrader
 }
 
-func (wuw websocketUpgraderWrapper) Upgrade(w http.ResponseWriter, r *http.Request, h http.Header) (WebsocketConn, error) {
+func (wuw websocketUpgraderWrapper) Upgrade(w http.ResponseWriter, r *http.Request, h http.Header) (Conn, error) {
 	return wuw.Upgrader.Upgrade(w, r, h)
 }
 
-// New wraps a *websocket.Upgrader to implement WebsocketUpgrader
-func New(u *websocket.Upgrader) WebsocketUpgrader {
+// NewUpgrader wraps a *websocket.Upgrader to implement WebsocketUpgrader
+func NewUpgrader(u *websocket.Upgrader) Upgrader {
 	return websocketUpgraderWrapper{Upgrader: u}
 }
 
-// WebsocketConn is the interface implemented by *websocket.Conn
-type WebsocketConn interface {
+// Conn is the interface implemented by *websocket.Conn.
+// Use NewMockConn(*gomock.Controller) in unit tests.
+type Conn interface {
 	Close() error
 	CloseHandler() func(code int, text string) error
 	EnableWriteCompression(enable bool)
@@ -57,4 +58,4 @@ type WebsocketConn interface {
 	WritePreparedMessage(pm *websocket.PreparedMessage) error
 }
 
-var _ WebsocketConn = &websocket.Conn{}
+var _ Conn = &websocket.Conn{}
